@@ -129,6 +129,6 @@ def clear_safari_data(driver):
         return
 
     driver.execute_script("mobile: pressButton", {"name": "home"})
-    time.sleep(2)
+    time.sleep(9)
     open_app(driver,"com.google.ios.youtube", "Youtube")
     time.sleep(12)
