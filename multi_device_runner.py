@@ -1,5 +1,6 @@
 import subprocess
 import time
+import requests
 import multiprocessing
 import subprocess
 from appium import webdriver
@@ -24,11 +25,48 @@ def get_connected_udids():
     except Exception as e:
         print(f"Error getting UDIDs: {e}")
         return []
+    
+def wait_for_appium_ready(wda_port, timeout=30):
+    url = f"http://localhost:{wda_port}/wd/hub/status"
+    for i in range(timeout):
+        try:
+            r = requests.get(url)
+            if r.status_code == 200:
+                print(f"✅ Appium tại cổng {wda_port} đã sẵn sàng!")
+                return True
+            else:
+                print(f"✅ Appium tại cổng {wda_port} chua sẵn sàng!")
+        except:
+            pass
+        time.sleep(1)
+    print(f"❌ Appium tại cổng {wda_port} không phản hồi sau {timeout} giây.")
+    return False
+
+def start_appium_server(wda_port, udid):
+    """Chạy 1 phiên Appium server riêng biệt."""
+    # log_file = f"appium_{udid}.log"
+    # command = [
+    #     "appium",
+    #     "-p", str(wda_port),
+    #     "--base-path", f"/wd/hub",
+    #     "--use-drivers", "xcuitest",
+    #     "--log", log_file
+    # ]
+
+    # print(f"🚀 Đang chạy Appium server cho thiết bị {udid} tại cổng {wda_port}")
+    # subprocess.Popen(command)
+    subprocess.Popen(
+        ["appium", "--port", str(wda_port), "--base-path", "/wd/hub", "--use-driver", "xcuitest"],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
 
 def run_signup(udid: str, wda_port: int):
     while True:
         try:
             print(f"[{udid}] Bắt đầu chạy automation...")
+            start_appium_server(wda_port, udid)
+            wait_for_appium_ready(wda_port, timeout=30)
             options = XCUITestOptions()
             options.platform_name = "iOS"
             options.platform_version = get_ios_version(udid)
@@ -39,7 +77,7 @@ def run_signup(udid: str, wda_port: int):
             options.no_reset = True
 
             driver = webdriver.Remote(
-                command_executor=f"http://localhost:{wda_port}",
+                command_executor=f"http://localhost:{wda_port}/wd/hub",
                 options=options
             )
             try:
