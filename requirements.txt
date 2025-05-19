@@ -8,4 +8,8 @@ requests==2.32.3
 
 #pip freeze > requirements.txt
 # source venv/bin/activate
-#
+#python -m venv venv
+# source venv/bin/activate  # macOS/Linux
+# venv\Scripts\activate     # Windows
+# pip install -r requirements.txt
+#git rm -r --cached venv
