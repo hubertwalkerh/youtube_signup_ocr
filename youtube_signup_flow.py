@@ -26,13 +26,13 @@ def signup_account(driver: WebDriver, udid: str):
     account = Account.random(udid)
     time.sleep(5)
     # tap_at(driver, 500, 500)
-    if not find_text_and_tap(driver, "sign in"):
-        wait_and_find_text_and_tap(driver, "Bạn")
-
+    find_text_and_tap(driver, "sign in;Bạn", True)
+    if find_text_and_tap(driver, "xong", True):
+        find_text_and_tap(driver, "Bạn", True)
+        
     wait_and_find_text_and_tap(driver, "Chuyển đổi tài khoản")
     wait_and_find_text_and_tap(driver, "Thêm tài khoản")
     wait_and_find_text_and_tap(driver, "Tiếp tục")
-
     wait_and_find_text_and_tap(driver, "Tạo tài khoản")
     wait_and_find_text_and_tap(driver, "Dành cho mục đích cá nhân của tôi")
 
@@ -42,22 +42,25 @@ def signup_account(driver: WebDriver, udid: str):
     if wait_and_find_text_and_tap(driver, "Tên"):
         input_text(driver, account.first_name,False, 1)
 
-
     wait_and_find_text_and_tap(driver, "Tiếp theo")
 
     if wait_and_find_text_and_tap(driver, "Ngày"):
         input_text(driver, random.randint(10,25),False,0)
     
     if find_text_and_tap(driver, "Tháng"):
+        time.sleep(1)
         find_text_and_tap(driver, "Tháng "+ str(random.randint(1,5)))
 
     if find_text_and_tap(driver, "Năm"):
+        time.sleep(1)
         input_text(driver,  random.randint(1990,1999),False,1)
 
     if find_text_and_tap(driver, "Giới tính"):
         if account.gender == "Nam":
+            time.sleep(1)
             find_text_and_tap_with_index(driver, account.gender, 1, True)
         else:
+            time.sleep(1)
             find_text_and_tap(driver, account.gender)
 
     wait_and_find_text_and_tap(driver, "Tiếp theo")

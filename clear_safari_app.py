@@ -67,23 +67,19 @@ def clear_safari_data(driver):
     for _ in range(8):
         if find_text_and_tap(driver, "Ẩn địa chỉ IP", exact_match=False):
             find_text_and_tap(driver, "Tắt")
-            time.sleep(1)
-            find_text_and_tap(driver, "Từ trình theo dõi") or \
-            find_text_and_tap(driver, "Trình theo dõi và trang web") or \
-            find_text_and_tap(driver, "Chỉ trình theo dõi")
-            time.sleep(1)
+            time.sleep(0.2)
+            find_text_and_tap(driver, "Từ trình theo dõi;Trình theo dõi và trang web;Chỉ trình theo dõi")
+            time.sleep(0.2)
             find_text_and_tap(driver, "Tắt")
-            time.sleep(1)
-            find_text_and_tap(driver, "Từ trình theo dõi") or \
-            find_text_and_tap(driver, "Trình theo dõi và trang web") or \
-            find_text_and_tap(driver, "Chỉ trình theo dõi")
-            time.sleep(1)
+            time.sleep(0.2)
+            find_text_and_tap(driver, "Từ trình theo dõi;Trình theo dõi và trang web;Chỉ trình theo dõi")
+            time.sleep(0.2)
             print("Đã bật trình theo dõi")
             find_text_and_tap(driver, "Safari")
-            time.sleep(1)
+            time.sleep(0.2)
             break
         scroll_vertical_percentage(driver, start_percent=0.8, end_percent=0.3, x_percent=0.5)
-        time.sleep(1)
+        time.sleep(0.5)
     else:
         print("❌ Không tìm thấy nút Ẩn địa chỉ IP.")
         return
@@ -94,41 +90,40 @@ def clear_safari_data(driver):
            find_text_and_tap(driver, "và dữ liệu", exact_match=False):
             break
         scroll_vertical_percentage(driver, start_percent=0.8, end_percent=0.3, x_percent=0.5)
-        time.sleep(1)
+        time.sleep(0.3)
     else:
         print("❌ Không tìm thấy nút xóa dữ liệu.")
         return
 
-    time.sleep(2)
+    time.sleep(0.5)
     find_text_and_tap(driver, "Xóa lịch sử và dữ liệu", exact_match=True) or \
           find_text_and_tap_with_index(driver, "Xóa lịch sử",index=1, exact_match=True)
-    time.sleep(2)
+    time.sleep(0.5)
     find_text_and_tap(driver, "Đóng các tab", exact_match=True)
-    time.sleep(2)
+    time.sleep(0.5)
     print("✅ Đã xoá dữ liệu lịch sử Safari.")
     find_text_and_tap(driver, "Ứng dụng", exact_match=True)
-    time.sleep(2)
+    time.sleep(1)
     find_text_and_tap(driver, "Cài đặt", exact_match=True)
-    time.sleep(8)
+    time.sleep(1)
 
     print("Scroll lên tìm chế độ máy bay...")
     for _ in range(5):
         scroll_vertical_percentage(driver, start_percent=0.3, end_percent=0.8, x_percent=0.5)
-        time.sleep(1)
+        time.sleep(0.2)
 
     for _ in range(10):
         if find_text_and_tap(driver, "Chế độ máy bay", exact_match=True):
-            time.sleep(1)
             print("Đã tìm được mục chế độ máy bay")
+            time.sleep(5)
             set_airplane_mode(driver, False)
             break
         scroll_vertical_percentage(driver, start_percent=0.3, end_percent=0.8, x_percent=0.5)
-        time.sleep(1)
+        time.sleep(0.2)
     else:
         print("❌ Không tìm thấy nút xóa dữ liệu.")
         return
 
     driver.execute_script("mobile: pressButton", {"name": "home"})
-    time.sleep(9)
     open_app(driver,"com.google.ios.youtube", "Youtube")
-    time.sleep(12)
+    time.sleep(1)

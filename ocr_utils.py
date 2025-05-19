@@ -6,21 +6,39 @@ from PIL import Image
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 import easyocr
+import torch
 import numpy as np
 from selenium.webdriver.common.by import By
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.common.actions.action_builder import ActionBuilder
 from selenium.webdriver.common.actions.pointer_input import PointerInput
 
-reader = easyocr.Reader(['vi'], gpu=False)
+reader = easyocr.Reader(['vi'], gpu=True)
 
 def take_screenshot_and_ocr(driver: WebDriver):
-    print("Bắt đầu screenshot")
+    print("🖼️ Bắt đầu screenshot và OCR...")
+    print(torch.backends.mps.is_available())
+    start_time = time.time()
+
+    # Lấy ảnh screenshot
     screenshot_base64 = driver.get_screenshot_as_base64()
     image_bytes = base64.b64decode(screenshot_base64)
     image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    results = reader.readtext(np.array(image))
-    print("Server đã trả về kết quả")
+
+    # Resize ảnh nếu quá lớn
+    max_width = 640
+    w, h = image.size
+    if w > max_width:
+        ratio = max_width / w
+        image = image.resize((int(w * ratio), int(h * ratio)))
+
+    # Chạy OCR
+    results = reader.readtext(np.array(image), detail=1)
+
+    # Đo thời gian hoàn tất
+    duration = time.time() - start_time
+    print(f"✅ OCR hoàn tất. Tìm thấy {len(results)} dòng văn bản. ⏱️ Mất {duration:.2f} giây.")
+
     return results, image
 
 def tap_at(driver, x, y):
@@ -43,7 +61,7 @@ def normalize_text(text):
     text = ''.join(c for c in text if unicodedata.category(c) != 'Mn')
     return text
 
-def find_text_and_tap(driver: WebDriver, keyword: str, exact_match: bool = True) -> bool:
+# def find_text_and_tap(driver: WebDriver, keyword: str, exact_match: bool = True) -> bool:
     
     results, img = take_screenshot_and_ocr(driver)
     print("OCR image size:", img.size)
@@ -71,15 +89,50 @@ def find_text_and_tap(driver: WebDriver, keyword: str, exact_match: bool = True)
             x_real = int(x * scale_x)
             y_real = int(y * scale_y)
             tap_at(driver, x_real, y_real)
-            time.sleep(3)
             return True
     print(f"[OCR] '{keyword}' not found on screen (normalized)")
     return False
 
+def find_text_and_tap(driver: WebDriver, keywords: str, exact_match: bool = True) -> bool:
+    results, img = take_screenshot_and_ocr(driver)
+    print(f"OCR image find:{keywords}")
+    window_size = driver.get_window_size()
+    print("Device screen size:", window_size)
+    scale_x = window_size['width'] / img.size[0]
+    scale_y = window_size['height'] / img.size[1]
+
+    # Chuyển thành list và normalize từng từ khóa
+    keyword_list = [normalize_text(k.strip()) for k in keywords.split(';') if k.strip()]
+    print(f"[OCR] Tìm các từ khóa: {keyword_list}")
+
+    print("[OCR] Các text tìm được trên màn hình:")
+    for detection in results:
+        text_raw = detection[1].strip()
+        print(f"  - {text_raw}")
+
+    for detection in results:
+        text_raw = detection[1].strip()
+        text_norm = normalize_text(text_raw)
+
+        for keyword_norm in keyword_list:
+            if (exact_match and keyword_norm == text_norm) or (not exact_match and keyword_norm in text_norm):
+                coords = detection[0]
+                x = int((coords[0][0] + coords[2][0]) / 2)
+                y = int((coords[0][1] + coords[2][1]) / 2)
+                print(f"[OCR] Found {'exact match' if exact_match else 'partial match'} '{text_raw}' → Tap at ({x},{y})")
+                x_real = int(x * scale_x)
+                y_real = int(y * scale_y)
+                tap_at(driver, x_real, y_real)
+                return True
+
+    print(f"[OCR] Không tìm thấy từ khóa nào trong: {keywords}")
+    return False
+
+
 def wait_and_find_text_and_tap(driver: WebDriver, keyword: str, exact_match: bool = True) -> bool:
     for _ in range(3):
         results, img = take_screenshot_and_ocr(driver)
-        print("OCR image size:", img.size)
+        print(f"OCR image find:{keyword}")
         window_size = driver.get_window_size()
         print("Device screen size:", window_size)
         scale_x = window_size['width'] / img.size[0]
@@ -106,7 +159,7 @@ def wait_and_find_text_and_tap(driver: WebDriver, keyword: str, exact_match: boo
                 tap_at(driver, x_real, y_real)
                 time.sleep(3)
                 return True
-        time.sleep(3)
+        time.sleep(1)
     print(f"[OCR] '{keyword}' not found on screen (normalized)")
     return False
 

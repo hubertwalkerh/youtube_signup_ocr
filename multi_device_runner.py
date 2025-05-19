@@ -82,6 +82,8 @@ def run_signup(udid: str, wda_port: int):
             )
             try:
                 print(f" UDID=: {udid}")
+                # Đóng ứng dụng Settings
+                driver.terminate_app("com.google.ios.youtube")
                 signup_account(driver, udid=udid)
             finally:
                 driver.quit()
