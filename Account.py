@@ -6,8 +6,12 @@ from datetime import datetime
 from dataclasses import dataclass, asdict
 
 def remove_accents(text):
-    return ''.join(c for c in unicodedata.normalize('NFD', text)
-                if unicodedata.category(c) != 'Mn')
+    text = ''.join(
+        c for c in unicodedata.normalize('NFD', text)
+        if unicodedata.category(c) != 'Mn'
+    )
+    text = text.replace('đ', 'd').replace('Đ', 'D')
+    return text
 
 @dataclass
 class Account:
